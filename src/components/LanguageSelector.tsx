@@ -8,7 +8,15 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerDescription,
+} from "@/components/ui/drawer";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 
 interface Language {
@@ -35,9 +43,47 @@ const defaultLanguages: Language[] = [
   { id: "th", name: "Thai", native: "ไทย" },
 ];
 
+const LanguageList = ({
+  selected,
+  onSelect,
+}: {
+  selected: string;
+  onSelect: (id: string) => void;
+}) => (
+  <div className="px-4 pb-4 pt-2 flex flex-col gap-1">
+    {defaultLanguages.map((lang) => (
+      <button
+        key={lang.id}
+        onClick={() => onSelect(lang.id)}
+        className={cn(
+          "flex items-center justify-between w-full px-3 py-3 rounded-lg",
+          "hover:bg-accent cursor-pointer transition-all duration-200 text-left",
+          selected === lang.id && "bg-primary/10"
+        )}
+      >
+        <div className="flex flex-col">
+          <span
+            className={cn(
+              "text-sm font-medium",
+              selected === lang.id ? "text-primary" : "text-foreground"
+            )}
+          >
+            {lang.native}
+          </span>
+          <span className="text-xs text-muted-foreground">{lang.name}</span>
+        </div>
+        {selected === lang.id && (
+          <Check className="h-4 w-4 text-primary shrink-0" />
+        )}
+      </button>
+    ))}
+  </div>
+);
+
 const LanguageSelector = () => {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<string>("en");
+  const isMobile = useIsMobile();
 
   const selectedLang = defaultLanguages.find((l) => l.id === selected);
 
@@ -58,57 +104,39 @@ const LanguageSelector = () => {
         {selectedLang?.native ?? "Change Language"}
       </Button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-sm max-h-[80vh] overflow-hidden rounded-xl glass-card p-0">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="text-xl font-semibold tracking-tight">
-              Select Language
-            </DialogTitle>
-            <DialogDescription>
-              Choose your preferred interface language.
-            </DialogDescription>
-          </DialogHeader>
-
-          <ScrollArea className="max-h-[400px]">
-            <div className="px-4 pb-4 pt-2 flex flex-col gap-1">
-              {defaultLanguages.map((lang) => (
-                <button
-                  key={lang.id}
-                  onClick={() => handleSelect(lang.id)}
-                  className={cn(
-                    "flex items-center justify-between w-full px-3 py-3 rounded-lg",
-                    "hover:bg-accent cursor-pointer transition-all duration-200 text-left",
-                    selected === lang.id && "bg-primary/10"
-                  )}
-                >
-                  <div className="flex flex-col">
-                    <span
-                      className={cn(
-                        "text-sm font-medium",
-                        selected === lang.id ? "text-primary" : "text-foreground"
-                      )}
-                    >
-                      {lang.native}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {lang.name}
-                    </span>
-                  </div>
-                  {selected === lang.id && (
-                    <Check className="h-4 w-4 text-primary shrink-0" />
-                  )}
-                </button>
-              ))}
-            </div>
-          </ScrollArea>
-
-          <div className="p-4 border-t border-border bg-muted/30 text-center">
-            <p className="text-xs text-muted-foreground">
-              More languages coming soon via API sync.
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {isMobile ? (
+        <Drawer open={open} onOpenChange={setOpen}>
+          <DrawerContent className="max-h-[85vh]">
+            <DrawerHeader className="text-left">
+              <DrawerTitle className="text-xl font-semibold tracking-tight">
+                Select Language
+              </DrawerTitle>
+              <DrawerDescription>
+                Choose your preferred interface language.
+              </DrawerDescription>
+            </DrawerHeader>
+            <ScrollArea className="max-h-[60vh] overflow-y-auto">
+              <LanguageList selected={selected} onSelect={handleSelect} />
+            </ScrollArea>
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="sm:max-w-sm max-h-[80vh] overflow-hidden rounded-xl glass-card p-0">
+            <DialogHeader className="p-6 pb-0">
+              <DialogTitle className="text-xl font-semibold tracking-tight">
+                Select Language
+              </DialogTitle>
+              <DialogDescription>
+                Choose your preferred interface language.
+              </DialogDescription>
+            </DialogHeader>
+            <ScrollArea className="max-h-[400px]">
+              <LanguageList selected={selected} onSelect={handleSelect} />
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
+      )}
     </>
   );
 };
