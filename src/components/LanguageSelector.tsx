@@ -1,13 +1,11 @@
 import { useState } from "react";
-import { Globe } from "lucide-react";
+import { Globe, Check, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 interface Language {
@@ -46,66 +44,58 @@ const LanguageSelector = () => {
   };
 
   return (
-    <>
-      <Button
-        variant="gradient"
-        size="lg"
-        onClick={() => setOpen(true)}
-        className="rounded-lg px-8 py-4 text-base font-semibold"
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="gradient"
+          size="lg"
+          className="rounded-lg px-6 py-4 text-base font-semibold min-w-[220px] justify-between"
+        >
+          <span className="flex items-center gap-2">
+            <Globe className="h-5 w-5" />
+            {selectedLang?.native ?? "Select Language"}
+          </span>
+          <ChevronDown
+            className={cn(
+              "h-4 w-4 transition-transform duration-200",
+              open && "rotate-180"
+            )}
+          />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-[280px] p-1 rounded-xl glass-card max-h-[320px] overflow-y-auto"
+        align="center"
+        sideOffset={8}
       >
-        <Globe className="h-5 w-5 mr-2" />
-        {selectedLang?.native ?? "Change Language"}
-      </Button>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-hidden rounded-xl glass-card p-0">
-          <DialogHeader className="p-6 pb-0">
-            <DialogTitle className="text-xl font-semibold tracking-tight">
-              Select Language
-            </DialogTitle>
-            <DialogDescription>
-              Choose your preferred interface language.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="p-6 pt-4 overflow-y-auto grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {defaultLanguages.map((lang) => (
-              <button
-                key={lang.id}
-                onClick={() => handleSelect(lang.id)}
+        {defaultLanguages.map((lang) => (
+          <button
+            key={lang.id}
+            onClick={() => handleSelect(lang.id)}
+            className={cn(
+              "flex items-center justify-between w-full px-3 py-2.5 rounded-lg",
+              "hover:bg-accent cursor-pointer transition-all duration-200 text-left",
+              selected === lang.id && "bg-primary/10"
+            )}
+          >
+            <div className="flex flex-col">
+              <span
                 className={cn(
-                  "flex flex-col items-start p-4 rounded-lg border border-transparent",
-                  "hover:border-primary/30 hover:bg-accent cursor-pointer",
-                  "transition-all duration-200 text-left",
-                  selected === lang.id &&
-                    "bg-primary/10 border-primary/40"
+                  "text-sm font-medium",
+                  selected === lang.id ? "text-primary" : "text-foreground"
                 )}
               >
-                <span
-                  className={cn(
-                    "text-sm font-medium transition-colors",
-                    selected === lang.id
-                      ? "text-primary"
-                      : "text-foreground"
-                  )}
-                >
-                  {lang.native}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {lang.name}
-                </span>
-              </button>
-            ))}
-          </div>
-
-          <div className="p-4 border-t border-border bg-muted/30 text-center">
-            <p className="text-xs text-muted-foreground">
-              More languages coming soon via API sync.
-            </p>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
+                {lang.native}
+              </span>
+              <span className="text-xs text-muted-foreground">{lang.name}</span>
+            </div>
+            {selected === lang.id && (
+              <Check className="h-4 w-4 text-primary shrink-0" />
+            )}
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
   );
 };
 
